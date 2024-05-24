@@ -20,7 +20,7 @@ fs.writeFile('leaderboard.json', JSON.stringify(default_json), 'utf8', function 
 });
 
 app.get('/', (req, res) => {
-    res.send('Hello World');
+    res.status(200).send('Hello World');
 });
 
 app.get("/OSLeaderboard", (req, res) => {
