@@ -15,7 +15,7 @@ generateLeaderboard();
 updateLeaderboardJob();
 
 let default_json = { "leaderboard": [], "success": true, "updatedAt": null, "generated": false };
-fs.writeFile(process.cwd()+'\\leaderboard.json', JSON.stringify(default_json), 'utf8', function (err) {
+fs.writeFile('/tmp/leaderboard.json', JSON.stringify(default_json), 'utf8', function (err) {
     if (err) throw err;
     console.log('leaderboard.json was reset');
 });
