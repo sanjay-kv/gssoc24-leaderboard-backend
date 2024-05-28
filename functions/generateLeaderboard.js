@@ -25,7 +25,7 @@ async function generateLeaderboard() {
         let projectLink = projects[m].project_link;
         projects[m].project_link = projects[m].project_link.split("/")[3] + "/" + (projects[m].project_link.split("/")[4] ? projects[m].project_link.split("/")[4] : '');
 
-        await axios.get(`https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-05-10..2024-05-21&per_page=100`, {
+        await axios.get(`https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-05-10..2024-08-10&per_page=100`, {
             headers: {
                 Authorization: 'token ' + process.env.GIT_TOKEN
             }
@@ -61,13 +61,13 @@ async function generateLeaderboard() {
                     let pages = Math.ceil(response.data.total_count / 100);
                     console.log("========")
                     console.log("No. of pages: " + pages);
-                    console.log(`https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:${identifyingLabel}+is:merged`);
+                    console.log(`https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged`);
                     console.log("========")
                     for (let i = 2; i <= pages; i++) {
                         console.log("Page: " + i);
-                        let paginated = await axios.get(`https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:${identifyingLabel}+is:merged+closed:2023-05-20..2023-08-10&per_page=100&page=${i}`, {
+                        let paginated = await axios.get(`https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-05-10..2024-08-10&per_page=100&page=${i}`, {
                             headers: {
-                                Authorization: 'token ' + process.env.GIT_KEY
+                                Authorization: 'token ' + process.env.GIT_TOKEN
                             }
                         }).then(async function (response) {
                             console.log("*****" + response.data.items.length);
@@ -109,7 +109,7 @@ async function generateLeaderboard() {
         )
 
         console.log("Completed " + (m + 1) + " of " + projects.length);
-        await timer(7000);
+        await timer(10000);
     }
     // wait for all the prs to be fetched
     console.log("Leaderboard generated");
@@ -123,7 +123,7 @@ async function generateLeaderboard() {
         generated: true,
         updatedTimestring: new Date().toLocaleString() + " No New PRs merged after 10th August 11:59p.m are counted"
     }
-    fs.truncate('leaderboard.json', 0, function () { console.log('done') }) 
+    fs.truncate('leaderboard.json', 0, function () { console.log('done') })
     fs.writeFile('leaderboard.json', JSON.stringify(json), 'utf8', function (err) {
         if (err) throw err;
         console.log('leaderboard.json was updated');
