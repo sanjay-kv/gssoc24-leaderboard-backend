@@ -26,7 +26,7 @@ app.get('/', (req, res) => {
 
 app.get("/OSLeaderboard", (req, res) => {
     console.log("got the request");
-    fs.readFile('leaderboard.json', 'utf8', function (err, data) {
+    fs.readFile('/tmp/leaderboard.json', 'utf8', function (err, data) {
         if (err) throw err;
         console.log("sending response");
         let obj = JSON.parse(data);
