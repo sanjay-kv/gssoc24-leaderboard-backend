@@ -1,0 +1,10 @@
+{
+   "version": 2,
+   "name": "gssoc-2024-leaderboard",
+   "builds": [
+      { "src": "server.js", "use": "@vercel/node" }
+   ],
+   "routes": [
+      { "src": "/(.*)", "dest": "/server.js" }
+   ]
+}
