@@ -15,7 +15,7 @@ generateLeaderboard();
 updateLeaderboardJob();
 
 let default_json = { "leaderboard": [], "success": true, "updatedAt": null, "generated": false };
-fs.writeFile('/tmp/leaderboard.json', JSON.stringify(default_json), 'utf8', function (err) {
+fs.writeFile('leaderboard.json', JSON.stringify(default_json), 'utf8', function (err) {
     if (err) throw err;
     console.log('leaderboard.json was reset');
 });
@@ -26,7 +26,7 @@ app.get('/', (req, res) => {
 
 app.get("/OSLeaderboard", (req, res) => {
     console.log("got the request");
-    fs.readFile('/tmp/leaderboard.json', 'utf8', function (err, data) {
+    fs.readFile('leaderboard.json', 'utf8', function (err, data) {
         if (err) throw err;
         console.log("sending response");
         let obj = JSON.parse(data);
