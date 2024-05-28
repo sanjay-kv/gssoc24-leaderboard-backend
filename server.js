@@ -5,6 +5,7 @@ const { generateLeaderboard } = require('./functions/generateLeaderboard');
 const { updateLeaderboardJob } = require('./jobs/updateOSLeaderboard');
 const fs = require('fs');
 const cors = require('cors');
+const port = process.env.PORT || 3000;
 require('dotenv').config()
 
 app.use(express.json());
@@ -24,19 +25,16 @@ app.get('/', (req, res) => {
 });
 
 app.get("/OSLeaderboard", (req, res) => {
-    console.log("Reading leaderboard.json");
-    try {
-        fs.readFile('leaderboard.json', 'utf8', function (err, data) {
-            if (err) throw err;
-            let obj = JSON.parse(data);
-            res.send(obj);
-        });
-    } catch(err) {
-        console.log(err)
-    }
+    console.log("got the request");
+    fs.readFile('leaderboard.json', 'utf8', function (err, data) {
+        if (err) throw err;
+        console.log("sending response");
+        let obj = JSON.parse(data);
+        res.send(obj);
+    });
 });
 
 
-app.listen(3000, () => {
+app.listen(port, "0.0.0.0", () => {
     console.log('Server started on port 3000');
 });
