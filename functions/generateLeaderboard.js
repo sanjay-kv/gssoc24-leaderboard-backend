@@ -123,8 +123,8 @@ async function generateLeaderboard() {
         generated: true,
         updatedTimestring: new Date().toLocaleString() + " No New PRs merged after 10th August 11:59p.m are counted"
     }
-    fs.truncate('/tmp/leaderboard.json', 0, function () { console.log('done') }) 
-    fs.writeFile('/tmp/leaderboard.json', JSON.stringify(json), 'utf8', function (err) {
+    fs.truncate('leaderboard.json', 0, function () { console.log('done') }) 
+    fs.writeFile('leaderboard.json', JSON.stringify(json), 'utf8', function (err) {
         if (err) throw err;
         console.log('leaderboard.json was updated');
     });
