@@ -7,7 +7,7 @@ const timer = ms => new Promise(res => setTimeout(res, ms))
 let leaderboard = {};
 
 async function generateLeaderboard() {
-    let projects = await axios.get(`https://opensheet.elk.sh/1JiqHjGyf43NNkou4PBe7WT4KEyueuFJct2p322nNMNw/JSON`)
+    let projects = await axios.get(process.env.OPENSHEET_URL)
     leaderboard = {};
     projects = projects.data;
     let identifyingLabel = "gssoc23";
