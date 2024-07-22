@@ -7,7 +7,7 @@ const timer = ms => new Promise(res => setTimeout(res, ms))
 let leaderboard = {};
 
 async function generateLeaderboard() {
-    let projects = await axios.get(process.env.OPENSHEET_URL)
+    let projects = await axios.get(`https://opensheet.elk.sh/1JiqHjGyf43NNkou4PBe7WT4KEyueuFJct2p322nNMNw/JSON`)
     leaderboard = {};
     projects = projects.data;
     let identifyingLabel = "gssoc23";
@@ -41,11 +41,16 @@ async function generateLeaderboard() {
                                 login: prs[i].user.login,
                                 url: prs[i].user.html_url,
                                 score: 0,
+                                postManTag: false,
                                 pr_urls: [],
                             }
                             //convert labels to keys
 
                         }
+                        if (prs[i].labels[j].name.toLowerCase() === "postman") {
+                            leaderboard[prs[i].user.id].postManTag = true
+                            leaderboard[prs[i].user.id].score += 500
+                        } 
                         if (leaderboard[prs[i].user.id].pr_urls.indexOf(prs[i].html_url) == -1) {
                             leaderboard[prs[i].user.id].pr_urls.push(prs[i].html_url);
                         }
@@ -121,7 +126,7 @@ async function generateLeaderboard() {
         success: true,
         updatedAt: +new Date(),
         generated: true,
-        updatedTimestring: new Date().toLocaleString() + "."
+        updatedTimestring: new Date().toLocaleString() + " No New PRs merged after 10th August 11:59p.m are counted"
     }
     fs.truncate('leaderboard.json', 0, function () { console.log('done') })
     fs.writeFile('leaderboard.json', JSON.stringify(json), 'utf8', function (err) {
