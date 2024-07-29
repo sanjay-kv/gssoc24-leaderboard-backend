@@ -1,5 +1,5 @@
 const schedule = require('node-schedule');
-const { generateLeaderboard } = require('../functions/generateLeaderboard');
+const generateLeaderboard = require('../functions/generateLeaderboard');
 
 
 

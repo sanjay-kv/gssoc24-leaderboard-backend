@@ -1,10 +1,10 @@
 //starter express file
 const express = require('express');
 const app = express();
-const { generateLeaderboard } = require('./functions/generateLeaderboard');
 const { updateLeaderboardJob } = require('./jobs/updateOSLeaderboard');
 const fs = require('fs');
 const cors = require('cors');
+const generateLeaderboard = require('./functions/generateLeaderboard');
 const port = process.env.PORT || 3000;
 require('dotenv').config()
 
