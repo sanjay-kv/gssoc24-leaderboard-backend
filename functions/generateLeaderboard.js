@@ -36,22 +36,22 @@ async function generateLeaderboard() {
       (projects[m].project_link.split("/")[4]
         ? projects[m].project_link.split("/")[4]
         : "");
-    if(projectLink==="GSSoC24/Postman-Challenge"){
+    if(projects[m].project_link==="GSSoC24/Postman-Challenge"){
         dateRanges = [
-            { startDate: "2024-07-17T00:00:00Z", endDate: "2024-07-28T23:59:59Z" },
-            { startDate: "2024-07-29T00:00:00Z", endDate: "2024-07-31T23:59:59Z" },
+            { startDate: "2024-07-17", endDate: "2024-07-28" },
+            { startDate: "2024-07-29", endDate: "2024-07-31" },
           ];    
     }
     dateRanges = [
-      { start: "2024-05-10T00:00:00Z", end: "2024-05-31T23:59:59Z" },
-      { start: "2024-06-01T00:00:00Z", end: "2024-06-30T23:59:59Z" },
-      { start: "2024-07-01T00:00:00Z", end: "2024-07-31T23:59:59Z" }
+      { start: "2024-05-10", end: "2024-05-31" },
+      { start: "2024-06-01", end: "2024-06-30" },
+      { start: "2024-07-01", end: "2024-07-31" }
   ];
 
     for (let dateRange of dateRanges) {
       await axios
         .get(
-          `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:${dateRange.startDate}..${dateRange.endDate}&per_page=100`,
+          `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC24,gssoc,level1,level2,level3+is:merged+closed:${dateRange.start}..${dateRange.end}&per_page=100`,
           {
             headers: {
               Authorization: "token " + process.env.GIT_TOKEN,
@@ -110,7 +110,7 @@ async function generateLeaderboard() {
               console.log("========");
               console.log("No. of pages: " + pages);
               console.log(
-                `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged`
+                `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC24,gssoc,level1,level2,level3+is:merged+closed:${dateRange.start}..${dateRange.end}&per_page=100`
               );
               console.log("========");
               for (let i = 2; i <= pages; i++) {
@@ -118,7 +118,7 @@ async function generateLeaderboard() {
               
                 let paginated = await axios
                   .get(
-                    `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:${dateRange.start}..${dateRange.end}&per_page=100&page=${i}`,
+                    `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC24,gssoc,level1,level2,level3+is:merged+closed:${dateRange.start}..${dateRange.end}&per_page=100&page=${i}`,
                     {
                       headers: {
                         Authorization: "token " + process.env.GIT_TOKEN,
@@ -185,7 +185,7 @@ async function generateLeaderboard() {
           }
         })
         .catch(function (err) {
-          console.log("Not found for this project link ", projectLink);
+          console.log("Not found for this project link ", projects[m].project_link);
         });
     }
     console.log("Completed " + (m + 1) + " of " + projects.length);
