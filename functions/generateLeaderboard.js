@@ -36,22 +36,23 @@ async function generateLeaderboard() {
       (projects[m].project_link.split("/")[4]
         ? projects[m].project_link.split("/")[4]
         : "");
-    if(projects[m].project_link==="GSSoC24/Postman-Challenge"){
-        dateRanges = [
-            { startDate: "2024-07-17", endDate: "2024-07-28" },
-            { startDate: "2024-07-29", endDate: "2024-07-31" },
-          ];    
+    if (projects[m].project_link == "GSSoC24/Postman-Challenge") {
+      dateRanges = [
+        { startDate: "2024-07-17", endDate: "2024-07-28" },
+        { startDate: "2024-07-29", endDate: "2024-07-31" },
+      ];
+    } else {
+      dateRanges = [
+        { start: "2024-05-10", end: "2024-05-31" },
+        { start: "2024-06-01", end: "2024-06-30" },
+        { start: "2024-07-01", end: "2024-07-31" },
+      ];
     }
-    dateRanges = [
-      { start: "2024-05-10", end: "2024-05-31" },
-      { start: "2024-06-01", end: "2024-06-30" },
-      { start: "2024-07-01", end: "2024-07-31" }
-  ];
 
     for (let dateRange of dateRanges) {
       await axios
         .get(
-          `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC24,gssoc,level1,level2,level3+is:merged+closed:${dateRange.start}..${dateRange.end}&per_page=100`,
+          `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC24,GSSOC'24,gssoc,level1,level2,level3+is:merged+closed:${dateRange.start}..${dateRange.end}&per_page=100`,
           {
             headers: {
               Authorization: "token " + process.env.GIT_TOKEN,
@@ -110,15 +111,15 @@ async function generateLeaderboard() {
               console.log("========");
               console.log("No. of pages: " + pages);
               console.log(
-                `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC24,gssoc,level1,level2,level3+is:merged+closed:${dateRange.start}..${dateRange.end}&per_page=100`
+                `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC24,GSSOC'24,gssoc,level1,level2,level3+is:merged+closed:${dateRange.start}..${dateRange.end}&per_page=100`
               );
               console.log("========");
               for (let i = 2; i <= pages; i++) {
                 console.log("Page: " + i);
-              
+
                 let paginated = await axios
                   .get(
-                    `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC24,gssoc,level1,level2,level3+is:merged+closed:${dateRange.start}..${dateRange.end}&per_page=100&page=${i}`,
+                    `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC24,GSSOC'24,gssoc,level1,level2,level3+is:merged+closed:${dateRange.start}..${dateRange.end}&per_page=100&page=${i}`,
                     {
                       headers: {
                         Authorization: "token " + process.env.GIT_TOKEN,
@@ -147,9 +148,11 @@ async function generateLeaderboard() {
                             leaderboard[prs[i].user.id].postManTag = true;
                             leaderboard[prs[i].user.id].score += 500;
                             logStream.write(
-                              `user: ${prs[i].user.login} pr: ${prs[i].html_url} label: ${
-                                prs[i].labels[j].name
-                              } points: ${leaderboard[prs[i].user.id].score} \n`
+                              `user: ${prs[i].user.login} pr: ${
+                                prs[i].html_url
+                              } label: ${prs[i].labels[j].name} points: ${
+                                leaderboard[prs[i].user.id].score
+                              } \n`
                             );
                           }
                           if (
@@ -177,7 +180,7 @@ async function generateLeaderboard() {
                         }
                       }
                     }
-                    console.log("Completed page: " + (i));
+                    console.log("Completed page: " + i);
                   });
                 await timer(10000);
               }
@@ -185,7 +188,10 @@ async function generateLeaderboard() {
           }
         })
         .catch(function (err) {
-          console.log("Not found for this project link ", projects[m].project_link);
+          console.log(
+            "Not found for this project link ",
+            projects[m].project_link
+          );
         });
     }
     console.log("Completed " + (m + 1) + " of " + projects.length);
