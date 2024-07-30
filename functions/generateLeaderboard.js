@@ -22,7 +22,7 @@ async function generateLeaderboard() {
     for (let m = 0; m < projects.length; m++) {
         let projectLink = projects[m].project_link;
         projects[m].project_link = projects[m].project_link.split("/")[3] + "/" + (projects[m].project_link.split("/")[4] ? projects[m].project_link.split("/")[4] : '');
-        await axios.get(`https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-05-10..2024-08-10&per_page=100`, {
+        await axios.get(`https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-05-10..2024-07-31&per_page=100`, {
             headers: {
                 Authorization: 'token ' + process.env.GIT_TOKEN
             }
@@ -65,7 +65,7 @@ async function generateLeaderboard() {
                     console.log("========")
                     for (let i = 2; i <= pages; i++) {
                         console.log("Page: " + i);
-                        let paginated = await axios.get(`https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-05-10..2024-08-10&per_page=100&page=${i}`, {
+                        let paginated = await axios.get(`https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-05-10..2024-07-31&per_page=100&page=${i}`, {
                             headers: {
                                 Authorization: 'token ' + process.env.GIT_TOKEN
                             }
