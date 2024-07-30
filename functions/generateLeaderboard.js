@@ -43,7 +43,7 @@ async function generateLeaderboard() {
                             }
                             //convert labels to keys
                         }
-                        if (prs[i].labels[j].name.toLowerCase() === "postman") {
+                        if (prs[i].labels[j].name.toLowerCase() === "postman" && leaderboard[prs[i].user.id].postManTag==false) {
                             leaderboard[prs[i].user.id].postManTag = true
                             leaderboard[prs[i].user.id].score += 500
                         } 
@@ -84,6 +84,10 @@ async function generateLeaderboard() {
                                                 pr_urls: [],
                                             }
                                         }
+                                        if (prs[i].labels[j].name.toLowerCase() === "postman" && leaderboard[prs[i].user.id].postManTag==false) {
+                                            leaderboard[prs[i].user.id].postManTag = true
+                                            leaderboard[prs[i].user.id].score += 500
+                                        } 
                                         if (leaderboard[prs[i].user.id].pr_urls.indexOf(prs[i].html_url) == -1) {
                                             leaderboard[prs[i].user.id].pr_urls.push(prs[i].html_url);
                                         }
