@@ -25,18 +25,6 @@ async function generateLeaderboard() {
         .slice(3, 5)
         .join("/");
 
-      let dateRanges =
-        projectLink === "GSSoC24/Postman-Challenge"
-          ? [
-              { startDate: "2024-07-23", endDate: "2024-07-29" },
-              { startDate: "2024-07-30", endDate: "2024-07-31" },
-            ]
-          : [
-              { start: "2024-05-10", end: "2024-06-10" },
-              { start: "2024-06-11", end: "2024-07-10" },
-              { start: "2024-07-11", end: "2024-07-31" },
-            ];
-
       await processDateRange(projectLink, "2024-05-10", "2024-07-31", labels);
 
       console.log(`Completed ${m + 1} of ${projects.length}`);
