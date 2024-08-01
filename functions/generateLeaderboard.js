@@ -35,7 +35,7 @@ async function generateLeaderboard() {
         : "");
     await axios
       .get(
-        `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-05-10..2024-07-31&per_page=100`,
+        `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-05-10..2024-08-10&per_page=100`,
         {
           headers: {
             Authorization: "token " + process.env.GIT_TOKEN,
@@ -46,7 +46,7 @@ async function generateLeaderboard() {
         if (response.data.total_count > 1000) {
           await axios
             .get(
-              `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-05-10..2024-07-01&per_page=100`,
+              `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-05-10..2024-07-09&per_page=100`,
               {
                 headers: {
                   Authorization: "token " + process.env.GIT_TOKEN,
@@ -104,7 +104,7 @@ async function generateLeaderboard() {
                   console.log("Page: " + i);
                   let paginated = await axios
                     .get(
-                      `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-05-10..2024-07-01&per_page=100&page=${i}`,
+                      `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-05-10..2024-07-09&per_page=100&page=${i}`,
                       {
                         headers: {
                           Authorization: "token " + process.env.GIT_TOKEN,
@@ -164,7 +164,7 @@ async function generateLeaderboard() {
             });
           await axios
             .get(
-              `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-07-02..2024-07-31&per_page=100`,
+              `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-07-10..2024-08-10&per_page=100`,
               {
                 headers: {
                   Authorization: "token " + process.env.GIT_TOKEN,
@@ -222,7 +222,7 @@ async function generateLeaderboard() {
                   console.log("Page: " + i);
                   let paginated = await axios
                     .get(
-                      `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-06-24..2024-07-31&per_page=100&page=${i}`,
+                      `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-07-10..2024-08-10&per_page=100&page=${i}`,
                       {
                         headers: {
                           Authorization: "token " + process.env.GIT_TOKEN,
@@ -330,7 +330,7 @@ async function generateLeaderboard() {
                 console.log("Page: " + i);
                 let paginated = await axios
                   .get(
-                    `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-05-10..2024-07-31&per_page=100&page=${i}`,
+                    `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-05-10..2024-08-10&per_page=100&page=${i}`,
                     {
                       headers: {
                         Authorization: "token " + process.env.GIT_TOKEN,
@@ -424,7 +424,7 @@ async function generateLeaderboard() {
     generated: true,
     updatedTimestring:
       new Date().toLocaleString() +
-      " No New PRs merged after 31st July 11:59p.m are counted",
+      " No New PRs merged after 9th August 11:59p.m are counted",
   };
   fs.truncate("leaderboard.json", 0, function () {
     console.log("done");
