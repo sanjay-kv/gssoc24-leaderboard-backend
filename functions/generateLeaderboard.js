@@ -143,7 +143,7 @@ async function generateLeaderboard() {
         console.log(projects[m].project_link)
     await axios
       .get(
-        `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-05-10..2024-08-09&per_page=100`,
+        `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-05-10..2024-08-10T18:59:59Z&per_page=100`,
         {
           headers: {
             Authorization: "token " + process.env.GIT_TOKEN,
@@ -178,7 +178,7 @@ async function generateLeaderboard() {
                 });
               await axios
                 .get(
-                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-08-01..2024-08-09&per_page=100`,
+                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-08-01..2024-08-10T18:59:59Z&per_page=100`,
                   {
                     headers: {
                       Authorization: "token " + process.env.GIT_TOKEN,
@@ -192,7 +192,7 @@ async function generateLeaderboard() {
                     projects[m].project_link,
                     labels,
                     "2024-08-01",
-                    "2024-08-09"
+                    "2024-08-10T18:59:59Z"
                   );
                 });
             } else if (
@@ -239,7 +239,7 @@ async function generateLeaderboard() {
                 });
               await axios
                 .get(
-                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-08-07..2024-08-09&per_page=100`,
+                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-08-07..2024-08-10T18:59:59Z&per_page=100`,
                   {
                     headers: {
                       Authorization: "token " + process.env.GIT_TOKEN,
@@ -253,7 +253,7 @@ async function generateLeaderboard() {
                     projects[m].project_link,
                     labels,
                     "2024-08-07",
-                    "2024-08-09"
+                    "2024-08-10T18:59:59Z"
                   );
                 });
             }
@@ -283,7 +283,7 @@ async function generateLeaderboard() {
                 });
               await axios
                 .get(
-                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-06-26..2024-08-09&per_page=100`,
+                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-06-26..2024-08-10T18:59:59Z&per_page=100`,
                   {
                     headers: {
                       Authorization: "token " + process.env.GIT_TOKEN,
@@ -297,7 +297,7 @@ async function generateLeaderboard() {
                     projects[m].project_link,
                     labels,
                     "2024-06-26",
-                    "2024-08-09"
+                    "2024-08-10T18:59:59Z"
                   );
                 });
             } else if (
@@ -344,7 +344,7 @@ async function generateLeaderboard() {
                 });
               await axios
                 .get(
-                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-07-31..2024-08-09&per_page=100`,
+                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-07-31..2024-08-10T18:59:59Z&per_page=100`,
                   {
                     headers: {
                       Authorization: "token " + process.env.GIT_TOKEN,
@@ -358,7 +358,7 @@ async function generateLeaderboard() {
                     projects[m].project_link,
                     labels,
                     "2024-07-31",
-                    "2024-08-09"
+                    "2024-08-10T18:59:59Z"
                   );
                 });
             } else if (
@@ -424,7 +424,7 @@ async function generateLeaderboard() {
                 });
               await axios
                 .get(
-                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-08-06..2024-08-09&per_page=100`,
+                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-08-06..2024-08-10T18:59:59Z&per_page=100`,
                   {
                     headers: {
                       Authorization: "token " + process.env.GIT_TOKEN,
@@ -438,7 +438,7 @@ async function generateLeaderboard() {
                     projects[m].project_link,
                     labels,
                     "2024-08-06",
-                    "2024-08-09"
+                    "2024-08-10T18:59:59Z"
                   );
                 });
             }
@@ -450,7 +450,7 @@ async function generateLeaderboard() {
             projects[m].project_link,
             labels,
             "2024-05-10",
-            "2024-08-09"
+            "2024-08-10T18:59:59Z"
           );
         }
       })
@@ -492,7 +492,7 @@ async function generateLeaderboard() {
     generated: true,
     updatedTimestring:
       new Date().toLocaleString() +
-      " No New PRs merged after 9th August 11:59p.m are counted",
+      " No New PRs merged after 10th August 7:00p.m are counted",
   };
   fs.truncate("leaderboard.json", 0, function () {
     console.log("done");
