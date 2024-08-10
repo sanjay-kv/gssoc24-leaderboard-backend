@@ -27,12 +27,19 @@ const leaderboardData = async (
             pr_urls: [],
           };
         }
-        if (
-          prs[i].labels[j].name.toLowerCase() === "postman" &&
-          leaderboard[prs[i].user.id].postManTag == false
-        ) {
-          leaderboard[prs[i].user.id].postManTag = true;
-          leaderboard[prs[i].user.id].score += 500;
+        if (prs[i].user.login.toLowerCase() == "hemu21") {
+          if (prs[i].labels[j].name.toLowerCase() === "postman") {
+            leaderboard[prs[i].user.id].postManTag = true;
+            leaderboard[prs[i].user.id].score += 500;
+          }
+        } else {
+          if (
+            prs[i].labels[j].name.toLowerCase() === "postman" &&
+            leaderboard[prs[i].user.id].postManTag == false
+          ) {
+            leaderboard[prs[i].user.id].postManTag = true;
+            leaderboard[prs[i].user.id].score += 500;
+          }
         }
         if (
           leaderboard[prs[i].user.id].pr_urls.indexOf(prs[i].html_url) == -1
@@ -81,12 +88,19 @@ const leaderboardData = async (
                       pr_urls: [],
                     };
                   }
-                  if (
-                    prs[i].labels[j].name.toLowerCase() === "postman" &&
-                    leaderboard[prs[i].user.id].postManTag == false
-                  ) {
-                    leaderboard[prs[i].user.id].postManTag = true;
-                    leaderboard[prs[i].user.id].score += 500;
+                  if (prs[i].user.login.toLowerCase() == "hemu21") {
+                    if (prs[i].labels[j].name.toLowerCase() === "postman") {
+                      leaderboard[prs[i].user.id].postManTag = true;
+                      leaderboard[prs[i].user.id].score += 500;
+                    }
+                  } else {
+                    if (
+                      prs[i].labels[j].name.toLowerCase() === "postman" &&
+                      leaderboard[prs[i].user.id].postManTag == false
+                    ) {
+                      leaderboard[prs[i].user.id].postManTag = true;
+                      leaderboard[prs[i].user.id].score += 500;
+                    }
                   }
                   if (
                     leaderboard[prs[i].user.id].pr_urls.indexOf(
@@ -140,7 +154,7 @@ async function generateLeaderboard() {
       (projects[m].project_link.split("/")[4]
         ? projects[m].project_link.split("/")[4]
         : "");
-        console.log(projects[m].project_link)
+    console.log(projects[m].project_link);
     await axios
       .get(
         `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24,GSSoC'24,gssoc+is:merged+closed:2024-05-10..2024-08-10T18:59:59Z&per_page=100`,
@@ -473,7 +487,10 @@ async function generateLeaderboard() {
             await timer(waitTime);
           }
         }
-        console.log("Not found for this project link ", projects[m].project_link);
+        console.log(
+          "Not found for this project link ",
+          projects[m].project_link
+        );
       });
     console.log("Completed " + (m + 1) + " of " + projects.length);
     await timer(10000);
