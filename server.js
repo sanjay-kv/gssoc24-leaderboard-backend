@@ -11,14 +11,14 @@ require('dotenv').config()
 app.use(express.json());
 app.use(cors());
 
-generateLeaderboard();
-updateLeaderboardJob();
+// generateLeaderboard();
+// updateLeaderboardJob();
 
-let default_json = { "leaderboard": [], "success": true, "updatedAt": null, "generated": false };
-fs.writeFile('leaderboard.json', JSON.stringify(default_json), 'utf8', function (err) {
-    if (err) throw err;
-    console.log('leaderboard.json was reset');
-});
+// let default_json = { "leaderboard": [], "success": true, "updatedAt": null, "generated": false };
+// fs.writeFile('leaderboard.json', JSON.stringify(default_json), 'utf8', function (err) {
+//     if (err) throw err;
+//     console.log('leaderboard.json was reset');
+//});
 
 app.get('/', (req, res) => {
     res.send('Hello World');
