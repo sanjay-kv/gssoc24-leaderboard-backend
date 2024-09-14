@@ -12,7 +12,10 @@ require("dotenv").config();
 
 app.use(express.json());
 app.use(cors());
-
+//   generateLeaderboard();
+//   updateLeaderboardJob();
+generateCALeaderboard();
+updateCALeaderboardJob();
 let default_json = {
   leaderboard: [],
   success: true,
@@ -43,8 +46,6 @@ app.get("/", (req, res) => {
 });
 
 app.get("/OSLeaderboard", (req, res) => {
-//   generateLeaderboard();
-//   updateLeaderboardJob();
   console.log("got the request");
   fs.readFile("leaderboard.json", "utf8", function (err, data) {
     if (err) throw err;
@@ -54,8 +55,6 @@ app.get("/OSLeaderboard", (req, res) => {
   });
 });
 app.get("/CALeaderboard", (req, res) => {
-  generateCALeaderboard();
-  updateCALeaderboardJob();
   console.log("got the request");
   fs.readFile("caLeaderboard.json", "utf8", function (err, data) {
     if (err) throw err;
