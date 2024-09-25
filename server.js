@@ -7,8 +7,9 @@ const { generateCALeaderboard } = require("./functions/generateCALeaderboard");
 const { updateCALeaderboardJob } = require("./jobs/updateCALeaderboard");
 const fs = require("fs");
 const cors = require("cors");
-const port = 3000;
 require("dotenv").config();
+
+const port = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use(cors());
@@ -65,5 +66,5 @@ app.get("/CALeaderboard", (req, res) => {
 });
 
 app.listen(port, "0.0.0.0", () => {
-  console.log("Server started on port 3000");
+  console.log(`Server started on port ${port}`);
 });
