@@ -7,7 +7,7 @@ const { generateCALeaderboard } = require("./functions/generateCALeaderboard");
 const { updateCALeaderboardJob } = require("./jobs/updateCALeaderboard");
 const fs = require("fs");
 const cors = require("cors");
-const port = process.env.PORT || 3000;
+const port = 3000;
 require("dotenv").config();
 
 app.use(express.json());
