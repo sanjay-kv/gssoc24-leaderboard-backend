@@ -1,527 +1,188 @@
 var fs = require("fs");
 var axios = require("axios");
-const { type } = require("os");
 require("dotenv").config();
 const timer = (ms) => new Promise((res) => setTimeout(res, ms));
 let leaderboard = {};
 
-const leaderboardData = async (
-  response,
-  leaderboard,
-  project_link,
-  labels,
-  start,
-  end
-) => {
-  if (response.data.items && response.data.items.length > 0) {
-    let prs = response.data.items;
-    for (let i = 0; i < prs.length; i++) {
-      for (let j = 0; j < prs[i].labels.length; j++) {
-        if (!leaderboard[prs[i].user.id]) {
-          leaderboard[prs[i].user.id] = {
-            avatar_url: prs[i].user.avatar_url,
-            login: prs[i].user.login,
-            url: prs[i].user.html_url,
-            score: 0,
-            postManTag: false,
-            pr_urls: [],
-          };
+const getGraphQLQuery = (repoOwner, repoName, start, end, cursor = null) => {
+  return `
+    query {
+      search(query: "repo:${repoOwner}/${repoName} is:pr is:merged label:gssoc-ext merged:${start}..${end}", type: ISSUE, first: 100, after: ${cursor ? `"${cursor}"` : "null"}) {
+        issueCount
+        pageInfo {
+          endCursor
+          hasNextPage
         }
-        if (prs[i].user.login.toLowerCase() == "hemu21") {
-          if (prs[i].labels[j].name.toLowerCase() === "postman") {
-            leaderboard[prs[i].user.id].postManTag = true;
-            leaderboard[prs[i].user.id].score += 500;
-          }
-        } else {
-          if (
-            prs[i].labels[j].name.toLowerCase() === "postman" &&
-            leaderboard[prs[i].user.id].postManTag == false
-          ) {
-            leaderboard[prs[i].user.id].postManTag = true;
-            leaderboard[prs[i].user.id].score += 500;
-          }
-        }
-        if (
-          leaderboard[prs[i].user.id].pr_urls.indexOf(prs[i].html_url) == -1
-        ) {
-          leaderboard[prs[i].user.id].pr_urls.push(prs[i].html_url);
-        }
-        let obj = labels.find((o) => o.label === prs[i].labels[j].name);
-        if (obj) {
-          leaderboard[prs[i].user.id].score += obj.points;
-        }
-      }
-    }
-    if (response.data.total_count > 100) {
-      //calculate number of pages
-      let pages = Math.ceil(response.data.total_count / 100);
-      console.log("========");
-      console.log("No. of pages: " + pages);
-      console.log(
-        `https://api.github.com/search/issues?q=repo:${project_link}+is:pr+label:gssoc24-ext+is:merged+closed:${start}..${end}&per_page=100`
-      );
-      console.log("========");
-      for (let i = 2; i <= pages; i++) {
-        console.log("Page: " + i);
-        let paginated = await axios
-          .get(
-            `https://api.github.com/search/issues?q=repo:${project_link}+is:pr+label:gssoc24-ext+is:merged+closed:${start}..${end}&per_page=100&page=${i}`,
-            {
-              headers: {
-                Authorization: "token " + process.env.GIT_TOKEN,
-              },
-            }
-          )
-          .then(async function (response) {
-            console.log("*****" + response.data.items.length);
-            if (response.data.items && response.data.items.length > 0) {
-              let prs = response.data.items;
-              for (let i = 0; i < prs.length; i++) {
-                for (let j = 0; j < prs[i].labels.length; j++) {
-                  if (!leaderboard[prs[i].user.id]) {
-                    leaderboard[prs[i].user.id] = {
-                      avatar_url: prs[i].user.avatar_url,
-                      login: prs[i].user.login,
-                      url: prs[i].user.html_url,
-                      postManTag: false,
-                      score: 0,
-                      pr_urls: [],
-                    };
-                  }
-                  if (prs[i].user.login.toLowerCase() == "hemu21") {
-                    if (prs[i].labels[j].name.toLowerCase() === "postman") {
-                      leaderboard[prs[i].user.id].postManTag = true;
-                      leaderboard[prs[i].user.id].score += 500;
-                    }
-                  } else {
-                    if (
-                      prs[i].labels[j].name.toLowerCase() === "postman" &&
-                      leaderboard[prs[i].user.id].postManTag == false
-                    ) {
-                      leaderboard[prs[i].user.id].postManTag = true;
-                      leaderboard[prs[i].user.id].score += 500;
-                    }
-                  }
-                  if (
-                    leaderboard[prs[i].user.id].pr_urls.indexOf(
-                      prs[i].html_url
-                    ) == -1
-                  ) {
-                    leaderboard[prs[i].user.id].pr_urls.push(prs[i].html_url);
-                  }
-                  let obj = labels.find(
-                    (o) => o.label === prs[i].labels[j].name
-                  );
-                  if (obj) {
-                    leaderboard[prs[i].user.id].score += obj.points;
+        edges {
+          node {
+            ... on PullRequest {
+              title
+              url
+              createdAt
+              author {
+                login
+                avatarUrl
+                url
+              }
+              labels(first: 10) {
+                edges {
+                  node {
+                    name
                   }
                 }
               }
             }
-            console.log("Completed page: " + (i + 1));
-          });
-        await timer(10000);
+          }
+        }
       }
+    }
+  `;
+};
+
+const leaderboardData = async (response, leaderboard, labels) => {
+  if (response.data.data.search.edges && response.data.data.search.edges.length > 0) {
+    let prs = response.data.data.search.edges;
+    for (let i = 0; i < prs.length; i++) {
+      let pr = prs[i].node;
+      let userId = pr.author.login;
+
+      if (!leaderboard[userId]) {
+        leaderboard[userId] = {
+          avatar_url: pr.author.avatarUrl,
+          login: pr.author.login,
+          url: pr.author.url,
+          score: 0,
+          postManTag: false,
+          pr_urls: [],
+          streak: 0,
+          lastCreatedDate: null,
+        };
+      }
+
+      let prLabels = pr.labels.edges.map((labelEdge) => labelEdge.node.name);
+      prLabels.forEach((label) => {
+        let labelObj = labels.find((o) => o.label.toLowerCase() === label.toLowerCase());
+        if (labelObj) {
+          leaderboard[userId].score += labelObj.points;
+        }
+      });
+
+      if (!leaderboard[userId].pr_urls.includes(pr.url)) {
+        leaderboard[userId].pr_urls.push(pr.url);
+      }
+
+      if (leaderboard[userId].postManTag === false && prLabels.includes("postman")) {
+        leaderboard[userId].postManTag = true;
+        leaderboard[userId].score += 500;
+      }
+
+      let createdAt = new Date(pr.createdAt);
+      if (leaderboard[userId].lastCreatedDate) {
+        let lastDate = new Date(leaderboard[userId].lastCreatedDate);
+        let diffInDays = Math.floor((createdAt - lastDate) / (1000 * 60 * 60 * 24));
+
+        if (diffInDays === 1) {
+          leaderboard[userId].streak += 1;
+        } else if (diffInDays > 1) {
+          leaderboard[userId].streak = 1;
+        }
+      } else {
+        leaderboard[userId].streak = 1;
+      }
+
+      leaderboard[userId].lastCreatedDate = createdAt;
     }
   }
 };
 
+
 async function generateLeaderboard() {
   let projects = await axios.get(
-    `https://opensheet.elk.sh/1JiqHjGyf43NNkou4PBe7WT4KEyueuFJct2p322nNMNw/JSON`
+    "https://opensheet.elk.sh/1KAehTt8hbFfKAm2ThxQsy769codW7w2Hp3MnxTYeM3w/1"
   );
   leaderboard = {};
   projects = projects.data;
+
   let labels = [
-    {
-      label: "level1",
-      points: 10,
-    },
-    {
-      label: "level2",
-      points: 25,
-    },
-    {
-      label: "level3",
-      points: 45,
-    },
+    { label: "level1", points: 10 },
+    { label: "level2", points: 25 },
+    { label: "level3", points: 45 },
+    { label: "level 1", points: 10 },
+    { label: "level 2", points: 25 },
+    { label: "level 3", points: 45 },
   ];
+
   for (let m = 0; m < projects.length; m++) {
     let projectLink = projects[m].project_link;
-    projects[m].project_link =
-      projects[m].project_link.split("/")[3] +
-      "/" +
-      (projects[m].project_link.split("/")[4]
-        ? projects[m].project_link.split("/")[4]
-        : "");
-    console.log(projects[m].project_link);
-    await axios
-      .get(
-        `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24-ext+is:merged+closed:2024-05-10..2024-08-10T18:59:59Z&per_page=100`,
-        {
-          headers: {
-            Authorization: "token " + process.env.GIT_TOKEN,
-          },
-        }
-      )
-      .then(async function (response) {
-        if (response.data.total_count > 1000) {
-          if (projects[m].project_link == "GSSoC24/Postman-Challenge") {
-            if (
-              response.data.total_count > 2000 &&
-              response.data.total_count <= 3000
-            ) {
-              await axios
-                .get(
-                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24-ext+is:merged+closed:2024-07-25..2024-07-31&per_page=100`,
-                  {
-                    headers: {
-                      Authorization: "token " + process.env.GIT_TOKEN,
-                    },
-                  }
-                )
-                .then(async function (response) {
-                  await leaderboardData(
-                    response,
-                    leaderboard,
-                    projects[m].project_link,
-                    labels,
-                    "2024-07-25",
-                    "2024-07-31"
-                  );
-                });
-              await axios
-                .get(
-                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24-ext+is:merged+closed:2024-08-01..2024-08-10T18:59:59Z&per_page=100`,
-                  {
-                    headers: {
-                      Authorization: "token " + process.env.GIT_TOKEN,
-                    },
-                  }
-                )
-                .then(async function (response) {
-                  await leaderboardData(
-                    response,
-                    leaderboard,
-                    projects[m].project_link,
-                    labels,
-                    "2024-08-01",
-                    "2024-08-10T18:59:59Z"
-                  );
-                });
-            } else if (
-              response.data.total_count > 2000 &&
-              response.data.total_count <= 3000
-            ) {
-              await axios
-                .get(
-                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24-ext+is:merged+closed:2024-07-25..2024-07-31&per_page=100`,
-                  {
-                    headers: {
-                      Authorization: "token " + process.env.GIT_TOKEN,
-                    },
-                  }
-                )
-                .then(async function (response) {
-                  await leaderboardData(
-                    response,
-                    leaderboard,
-                    projects[m].project_link,
-                    labels,
-                    "2024-07-25",
-                    "2024-07-31"
-                  );
-                });
-              await axios
-                .get(
-                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24-ext+is:merged+closed:2024-08-01..2024-08-06&per_page=100`,
-                  {
-                    headers: {
-                      Authorization: "token " + process.env.GIT_TOKEN,
-                    },
-                  }
-                )
-                .then(async function (response) {
-                  await leaderboardData(
-                    response,
-                    leaderboard,
-                    projects[m].project_link,
-                    labels,
-                    "2024-08-01",
-                    "2024-08-06"
-                  );
-                });
-              await axios
-                .get(
-                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24-ext+is:merged+closed:2024-08-07..2024-08-10T18:59:59Z&per_page=100`,
-                  {
-                    headers: {
-                      Authorization: "token " + process.env.GIT_TOKEN,
-                    },
-                  }
-                )
-                .then(async function (response) {
-                  await leaderboardData(
-                    response,
-                    leaderboard,
-                    projects[m].project_link,
-                    labels,
-                    "2024-08-07",
-                    "2024-08-10T18:59:59Z"
-                  );
-                });
-            }
-          } else {
-            if (
-              response.data.total_count > 1000 &&
-              response.data.total_count <= 2000
-            ) {
-              await axios
-                .get(
-                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24-ext+is:merged+closed:2024-05-10..2024-06-25&per_page=100`,
-                  {
-                    headers: {
-                      Authorization: "token " + process.env.GIT_TOKEN,
-                    },
-                  }
-                )
-                .then(async function (response) {
-                  await leaderboardData(
-                    response,
-                    leaderboard,
-                    projects[m].project_link,
-                    labels,
-                    "2024-05-10",
-                    "2024-06-25"
-                  );
-                });
-              await axios
-                .get(
-                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24-ext+is:merged+closed:2024-06-26..2024-08-10T18:59:59Z&per_page=100`,
-                  {
-                    headers: {
-                      Authorization: "token " + process.env.GIT_TOKEN,
-                    },
-                  }
-                )
-                .then(async function (response) {
-                  await leaderboardData(
-                    response,
-                    leaderboard,
-                    projects[m].project_link,
-                    labels,
-                    "2024-06-26",
-                    "2024-08-10T18:59:59Z"
-                  );
-                });
-            } else if (
-              response.data.total_count > 2000 &&
-              response.data.total_count <= 3000
-            ) {
-              await axios
-                .get(
-                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24-ext+is:merged+closed:2024-05-10..2024-06-25&per_page=100`,
-                  {
-                    headers: {
-                      Authorization: "token " + process.env.GIT_TOKEN,
-                    },
-                  }
-                )
-                .then(async function (response) {
-                  await leaderboardData(
-                    response,
-                    leaderboard,
-                    projects[m].project_link,
-                    labels,
-                    "2024-05-10",
-                    "2024-06-25"
-                  );
-                });
-              await axios
-                .get(
-                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24-ext+is:merged+closed:2024-06-26..2024-07-30&per_page=100`,
-                  {
-                    headers: {
-                      Authorization: "token " + process.env.GIT_TOKEN,
-                    },
-                  }
-                )
-                .then(async function (response) {
-                  await leaderboardData(
-                    response,
-                    leaderboard,
-                    projects[m].project_link,
-                    labels,
-                    "2024-06-26",
-                    "2024-07-30"
-                  );
-                });
-              await axios
-                .get(
-                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24-ext+is:merged+closed:2024-07-31..2024-08-10T18:59:59Z&per_page=100`,
-                  {
-                    headers: {
-                      Authorization: "token " + process.env.GIT_TOKEN,
-                    },
-                  }
-                )
-                .then(async function (response) {
-                  await leaderboardData(
-                    response,
-                    leaderboard,
-                    projects[m].project_link,
-                    labels,
-                    "2024-07-31",
-                    "2024-08-10T18:59:59Z"
-                  );
-                });
-            } else if (
-              response.data.total_count > 3000 &&
-              response.data.total_count <= 4000
-            ) {
-              await axios
-                .get(
-                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24-ext+is:merged+closed:2024-05-10..2024-06-25&per_page=100`,
-                  {
-                    headers: {
-                      Authorization: "token " + process.env.GIT_TOKEN,
-                    },
-                  }
-                )
-                .then(async function (response) {
-                  await leaderboardData(
-                    response,
-                    leaderboard,
-                    projects[m].project_link,
-                    labels,
-                    "2024-05-10",
-                    "2024-06-25"
-                  );
-                });
-              await axios
-                .get(
-                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24-ext+is:merged+closed:2024-06-26..2024-07-30&per_page=100`,
-                  {
-                    headers: {
-                      Authorization: "token " + process.env.GIT_TOKEN,
-                    },
-                  }
-                )
-                .then(async function (response) {
-                  await leaderboardData(
-                    response,
-                    leaderboard,
-                    projects[m].project_link,
-                    labels,
-                    "2024-06-26",
-                    "2024-07-30"
-                  );
-                });
-              await axios
-                .get(
-                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24-ext+is:merged+closed:2024-07-31..2024-08-05&per_page=100`,
-                  {
-                    headers: {
-                      Authorization: "token " + process.env.GIT_TOKEN,
-                    },
-                  }
-                )
-                .then(async function (response) {
-                  await leaderboardData(
-                    response,
-                    leaderboard,
-                    projects[m].project_link,
-                    labels,
-                    "2024-07-31",
-                    "2024-08-05"
-                  );
-                });
-              await axios
-                .get(
-                  `https://api.github.com/search/issues?q=repo:${projects[m].project_link}+is:pr+label:gssoc24-ext+is:merged+closed:2024-08-06..2024-08-10T18:59:59Z&per_page=100`,
-                  {
-                    headers: {
-                      Authorization: "token " + process.env.GIT_TOKEN,
-                    },
-                  }
-                )
-                .then(async function (response) {
-                  await leaderboardData(
-                    response,
-                    leaderboard,
-                    projects[m].project_link,
-                    labels,
-                    "2024-08-06",
-                    "2024-08-10T18:59:59Z"
-                  );
-                });
-            }
+    let [repoOwner, repoName] = projectLink.split("/").slice(-2);
+    console.log(`${repoOwner}/${repoName}`);
+
+    let hasNextPage = true;
+    let cursor = null;
+
+    while (hasNextPage) {
+      let query = getGraphQLQuery(repoOwner, repoName, "2024-10-01", "2024-11-10T18:59:59Z", cursor);
+
+      await axios
+        .post(
+          "https://api.github.com/graphql",
+          { query },
+          {
+            headers: {
+              Authorization: "Bearer " + process.env.GIT_TOKEN,
+            },
           }
-        } else {
-          await leaderboardData(
-            response,
-            leaderboard,
-            projects[m].project_link,
-            labels,
-            "2024-05-10",
-            "2024-08-10T18:59:59Z"
-          );
-        }
-      })
-      .catch(async function (err) {
-        if (
-          err.response &&
-          err.response.status === 403 &&
-          err.response.headers["x-ratelimit-reset"]
-        ) {
-          const resetTime = new Date(
-            err.response.headers["x-ratelimit-reset"] * 1000
-          );
-          const waitTime = resetTime - new Date();
-          if (waitTime > 0) {
-            console.log(
-              `Rate limit exceeded. Waiting for ${
-                waitTime / 1000 / 60
-              } minutes.`
+        )
+        .then(async function (response) {
+          await leaderboardData(response, leaderboard, labels);
+
+          hasNextPage = response.data.data.search.pageInfo.hasNextPage;
+          cursor = response.data.data.search.pageInfo.endCursor; 
+        })
+        .catch(async function (err) {
+          if (
+            err.response &&
+            err.response.status === 403 &&
+            err.response.headers["x-ratelimit-reset"]
+          ) {
+            const resetTime = new Date(
+              err.response.headers["x-ratelimit-reset"] * 1000
             );
-            await timer(waitTime);
+            const waitTime = resetTime - new Date();
+            if (waitTime > 0) {
+              console.log(`Rate limit exceeded. Waiting for ${waitTime / 1000 / 60} minutes.`);
+              await timer(waitTime);
+            }
           }
-        }
-        console.log(
-          "Not found for this project link ",
-          projects[m].project_link
-        );
-      });
+          console.log("Not found for this project link ", `${repoOwner}/${repoName}`);
+          hasNextPage = false;
+        });
+    }
+
     console.log("Completed " + (m + 1) + " of " + projects.length);
-    await timer(10000);
+    await timer(8000);
   }
-  // wait for all the prs to be fetched
-  console.log("Leaderboard generated");
-  //sort the leaderboard by score
-  let leaderboardArray = Object.keys(leaderboard).map(
-    (key) => leaderboard[key]
-  );
+
+  let leaderboardArray = Object.keys(leaderboard).map((key) => leaderboard[key]);
   leaderboardArray.sort((a, b) => b.score - a.score);
+
   let json = {
     leaderboard: leaderboardArray,
     success: true,
     updatedAt: +new Date(),
     generated: true,
-    updatedTimestring:
-      new Date().toLocaleString() +
-      " No New PRs merged after 10th August 7:00p.m are counted",
+    updatedTimestring: new Date().toLocaleString() + " No New PRs merged after 10th November 7:00p.m are counted",
+    streakData: leaderboardArray.map(user => ({ login: user.login, streak: user.streak })),
   };
+  
   fs.truncate("leaderboard.json", 0, function () {
     console.log("done");
   });
-  fs.writeFile(
-    "leaderboard.json",
-    JSON.stringify(json),
-    "utf8",
-    function (err) {
-      if (err) throw err;
-      console.log("leaderboard.json was updated");
-    }
-  );
+  
+  fs.writeFile("leaderboard.json", JSON.stringify(json), "utf8", function (err) {
+    if (err) throw err;
+    console.log("leaderboard.json was updated");
+  });
 }
+
 module.exports.generateLeaderboard = generateLeaderboard;

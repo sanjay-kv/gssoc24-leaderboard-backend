@@ -1,4 +1,3 @@
-//starter express file
 const express = require("express");
 const app = express();
 const { generateLeaderboard } = require("./functions/generateLeaderboard");
@@ -13,34 +12,34 @@ const port = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use(cors());
-//   generateLeaderboard();
-//   updateLeaderboardJob();
-generateCALeaderboard();
-updateCALeaderboardJob();
+generateLeaderboard();
+updateLeaderboardJob();
+// generateCALeaderboard();
+// updateCALeaderboardJob();
 let default_json = {
   leaderboard: [],
   success: true,
   updatedAt: null,
   generated: false,
 };
-// fs.writeFile(
-//   "leaderboard.json",
-//   JSON.stringify(default_json),
-//   "utf8",
-//   function (err) {
-//     if (err) throw err;
-//     console.log("leaderboard.json was reset");
-//   }
-// );
 fs.writeFile(
-  "caLeaderboard.json",
+  "leaderboard.json",
   JSON.stringify(default_json),
   "utf8",
   function (err) {
     if (err) throw err;
-    console.log("caLeaderboard.json was reset");
+    console.log("leaderboard.json was reset");
   }
 );
+// fs.writeFile(
+//   "caLeaderboard.json",
+//   JSON.stringify(default_json),
+//   "utf8",
+//   function (err) {
+//     if (err) throw err;
+//     console.log("caLeaderboard.json was reset");
+//   }
+// );
 
 app.get("/", (req, res) => {
   res.send("Hello World");
