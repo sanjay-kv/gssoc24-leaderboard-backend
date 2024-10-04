@@ -1,4 +1,3 @@
-//starter express file
 const express = require("express");
 const app = express();
 const { generateLeaderboard } = require("./functions/generateLeaderboard");
@@ -13,8 +12,8 @@ const port = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use(cors());
-//   generateLeaderboard();
-//   updateLeaderboardJob();
+generateLeaderboard();
+updateLeaderboardJob();
 generateCALeaderboard();
 updateCALeaderboardJob();
 let default_json = {
