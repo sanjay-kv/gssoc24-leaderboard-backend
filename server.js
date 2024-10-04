@@ -14,32 +14,32 @@ app.use(express.json());
 app.use(cors());
 generateLeaderboard();
 updateLeaderboardJob();
-generateCALeaderboard();
-updateCALeaderboardJob();
+// generateCALeaderboard();
+// updateCALeaderboardJob();
 let default_json = {
   leaderboard: [],
   success: true,
   updatedAt: null,
   generated: false,
 };
-// fs.writeFile(
-//   "leaderboard.json",
-//   JSON.stringify(default_json),
-//   "utf8",
-//   function (err) {
-//     if (err) throw err;
-//     console.log("leaderboard.json was reset");
-//   }
-// );
 fs.writeFile(
-  "caLeaderboard.json",
+  "leaderboard.json",
   JSON.stringify(default_json),
   "utf8",
   function (err) {
     if (err) throw err;
-    console.log("caLeaderboard.json was reset");
+    console.log("leaderboard.json was reset");
   }
 );
+// fs.writeFile(
+//   "caLeaderboard.json",
+//   JSON.stringify(default_json),
+//   "utf8",
+//   function (err) {
+//     if (err) throw err;
+//     console.log("caLeaderboard.json was reset");
+//   }
+// );
 
 app.get("/", (req, res) => {
   res.send("Hello World");
