@@ -8,7 +8,7 @@ function updateLeaderboardJob() {
         console.log("========")
         console.log("Starting leaderboard updation job...");
         console.log("========")
-        // generateLeaderboard();
+        generateLeaderboard();
     });
 
 }
