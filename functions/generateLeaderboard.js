@@ -42,10 +42,12 @@ const getGraphQLQuery = (repoOwner, repoName, start, end, cursor = null) => {
 const leaderboardData = async (response, leaderboard, labels) => {
   if (response.data.data.search.edges && response.data.data.search.edges.length > 0) {
     let prs = response.data.data.search.edges;
+    
     for (let i = 0; i < prs.length; i++) {
       let pr = prs[i].node;
       let userId = pr.author.login;
 
+      // Initialize user in leaderboard if not already present
       if (!leaderboard[userId]) {
         leaderboard[userId] = {
           avatar_url: pr.author.avatarUrl,
@@ -54,11 +56,12 @@ const leaderboardData = async (response, leaderboard, labels) => {
           score: 0,
           postManTag: false,
           pr_urls: [],
+          pr_dates: [], // Store PR dates here
           streak: 0,
-          lastCreatedDate: null,
         };
       }
 
+      // Track PR labels for scoring
       let prLabels = pr.labels.edges.map((labelEdge) => labelEdge.node.name);
       prLabels.forEach((label) => {
         let labelObj = labels.find((o) => o.label.toLowerCase() === label.toLowerCase());
@@ -67,34 +70,52 @@ const leaderboardData = async (response, leaderboard, labels) => {
         }
       });
 
+      // Track PR URLs to avoid duplicates
       if (!leaderboard[userId].pr_urls.includes(pr.url)) {
         leaderboard[userId].pr_urls.push(pr.url);
       }
 
-      if (leaderboard[userId].postManTag === false && prLabels.includes("postman")) {
+      // Extra score for postman label
+      if (!leaderboard[userId].postManTag && prLabels.includes("postman")) {
         leaderboard[userId].postManTag = true;
         leaderboard[userId].score += 500;
       }
 
-      let createdAt = new Date(pr.createdAt);
-      if (leaderboard[userId].lastCreatedDate) {
-        let lastDate = new Date(leaderboard[userId].lastCreatedDate);
-        let diffInDays = Math.floor((createdAt - lastDate) / (1000 * 60 * 60 * 24));
-
-        if (diffInDays === 1) {
-          leaderboard[userId].streak += 1;
-        } else if (diffInDays > 1) {
-          leaderboard[userId].streak = 1;
-        }
-      } else {
-        leaderboard[userId].streak = 1;
+      // Collect PR submission dates
+      let createdAt = new Date(pr.createdAt).toISOString().split("T")[0]; // Store only the date part
+      if (!leaderboard[userId].pr_dates.includes(createdAt)) {
+        leaderboard[userId].pr_dates.push(createdAt);
       }
-
-      leaderboard[userId].lastCreatedDate = createdAt;
     }
+
+    // Calculate streak for each user
+    Object.keys(leaderboard).forEach((userId) => {
+      let user = leaderboard[userId];
+
+      // Sort PR dates in ascending order
+      let sortedDates = user.pr_dates.sort((a, b) => new Date(a) - new Date(b));
+
+      // Reset streak
+      user.streak = 1;
+
+      for (let j = 1; j < sortedDates.length; j++) {
+        let prevDate = new Date(sortedDates[j - 1]);
+        let currDate = new Date(sortedDates[j]);
+
+        // Calculate the difference in days
+        let diffInDays = (currDate - prevDate) / (1000 * 60 * 60 * 24);
+
+        // Increment streak if PRs are submitted on consecutive days
+        if (diffInDays === 1) {
+          user.streak += 1;
+        } else if (diffInDays > 1) {
+          // Reset the streak if there's a gap of more than 1 day
+          user.streak = 1;
+        }
+      }
+    });
   }
 };
-
 
 async function generateLeaderboard() {
   let projects = await axios.get(
@@ -160,7 +181,7 @@ async function generateLeaderboard() {
     }
 
     console.log("Completed " + (m + 1) + " of " + projects.length);
-    await timer(8000);
+    await timer(2000);
   }
 
   let leaderboardArray = Object.keys(leaderboard).map((key) => leaderboard[key]);
