@@ -119,7 +119,7 @@ const leaderboardData = async (response, leaderboard, labels) => {
 
 async function generateLeaderboard() {
   let projects = await axios.get(
-    "https://opensheet.elk.sh/1KAehTt8hbFfKAm2ThxQsy769codW7w2Hp3MnxTYeM3w/1"
+    "https://opensheet.elk.sh/1dM4gAty0kvjxXjT_UPQZQ6sy8ixcwut8asDM2IDVEss/1"
   );
   leaderboard = {};
   projects = projects.data;
