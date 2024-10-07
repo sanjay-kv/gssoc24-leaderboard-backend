@@ -128,9 +128,6 @@ async function generateLeaderboard() {
     { label: "level1", points: 10 },
     { label: "level2", points: 25 },
     { label: "level3", points: 45 },
-    { label: "level 1", points: 10 },
-    { label: "level 2", points: 25 },
-    { label: "level 3", points: 45 },
   ];
 
   for (let m = 0; m < projects.length; m++) {
