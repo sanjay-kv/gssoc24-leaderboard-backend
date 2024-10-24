@@ -78,7 +78,7 @@ const leaderboardData = async (response, leaderboard, labels) => {
       // Extra score for postman label
       if (!leaderboard[userId].postManTag && prLabels.includes("postman")) {
         
-        console.log("Postman tag found for " + leaderboard[userId].score,leaderboard[userId].login,leaderboard[userId].postManTag);
+        //console.log("Postman tag found for " + leaderboard[userId].score,leaderboard[userId].login,leaderboard[userId].postManTag);
         leaderboard[userId].postManTag = true;
         leaderboard[userId].score += 500;
       }
@@ -121,7 +121,7 @@ const leaderboardData = async (response, leaderboard, labels) => {
 
 async function generateLeaderboard() {
   let projects = await axios.get(
-    "https://opensheet.elk.sh/1dM4gAty0kvjxXjT_UPQZQ6sy8ixcwut8asDM2IDVEss/2"
+    "https://opensheet.elk.sh/1dM4gAty0kvjxXjT_UPQZQ6sy8ixcwut8asDM2IDVEss/1"
   );
   leaderboard = {};
   projects = projects.data;
