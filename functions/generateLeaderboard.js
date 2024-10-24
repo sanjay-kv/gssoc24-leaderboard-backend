@@ -77,6 +77,8 @@ const leaderboardData = async (response, leaderboard, labels) => {
 
       // Extra score for postman label
       if (!leaderboard[userId].postManTag && prLabels.includes("postman")) {
+        
+        console.log("Postman tag found for " + leaderboard[userId].score,leaderboard[userId].login,leaderboard[userId].postManTag);
         leaderboard[userId].postManTag = true;
         leaderboard[userId].score += 500;
       }
@@ -119,7 +121,7 @@ const leaderboardData = async (response, leaderboard, labels) => {
 
 async function generateLeaderboard() {
   let projects = await axios.get(
-    "https://opensheet.elk.sh/1dM4gAty0kvjxXjT_UPQZQ6sy8ixcwut8asDM2IDVEss/1"
+    "https://opensheet.elk.sh/1dM4gAty0kvjxXjT_UPQZQ6sy8ixcwut8asDM2IDVEss/2"
   );
   leaderboard = {};
   projects = projects.data;
@@ -134,7 +136,6 @@ async function generateLeaderboard() {
     { label: "level-1", points: 10 },
     { label: "level-2", points: 25 },
     { label: "level-3", points: 45 },
-    { label: "postman", points: 500 },
   ];
 
   for (let m = 0; m < projects.length; m++) {
@@ -159,6 +160,7 @@ async function generateLeaderboard() {
           }
         )
         .then(async function (response) {
+
           await leaderboardData(response, leaderboard, labels);
 
           hasNextPage = response.data.data.search.pageInfo.hasNextPage;
