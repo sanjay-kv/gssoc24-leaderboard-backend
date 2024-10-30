@@ -198,7 +198,7 @@ async function generateLeaderboard() {
     success: true,
     updatedAt: +new Date(),
     generated: true,
-    updatedTimestring: new Date().toLocaleString() + " No New PRs merged after 31th October 7:00p.m are counted",
+    updatedTimestring: new Date().toLocaleString() + " No New PRs merged after 10th November 7:00p.m are counted",
     streakData: leaderboardArray.map(user => ({ login: user.login, streak: user.streak })),
   };
   
