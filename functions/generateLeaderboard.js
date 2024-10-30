@@ -187,7 +187,7 @@ async function generateLeaderboard() {
     }
 
     console.log("Completed " + (m + 1) + " of " + projects.length);
-    await timer(2000);
+    await timer(10000);
   }
 
   let leaderboardArray = Object.keys(leaderboard).map((key) => leaderboard[key]);
