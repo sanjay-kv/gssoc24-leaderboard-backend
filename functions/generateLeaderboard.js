@@ -55,6 +55,7 @@ const leaderboardData = async (response, leaderboard, labels) => {
           url: pr.author.url,
           score: 0,
           postManTag: false,
+          web3hack: false,
           pr_urls: [],
           pr_dates: [], // Store PR dates here
           streak: 0,
@@ -81,6 +82,12 @@ const leaderboardData = async (response, leaderboard, labels) => {
         //console.log("Postman tag found for " + leaderboard[userId].score,leaderboard[userId].login,leaderboard[userId].postManTag);
         leaderboard[userId].postManTag = true;
         leaderboard[userId].score += 500;
+      }
+
+      if (!leaderboard[userId].web3hack && prLabels.includes("hack-web3")) {
+        
+        leaderboard[userId].web3hack = true;
+        leaderboard[userId].score += 250;
       }
 
       // Collect PR submission dates
