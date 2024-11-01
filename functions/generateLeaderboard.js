@@ -40,59 +40,63 @@ const getGraphQLQuery = (repoOwner, repoName, start, end, cursor = null) => {
 };
 
 const leaderboardData = async (response, leaderboard, labels) => {
-  if (response.data.data.search.edges && response.data.data.search.edges.length > 0) {
+  if (
+    response.data.data.search.edges &&
+    response.data.data.search.edges.length > 0
+  ) {
     let prs = response.data.data.search.edges;
-    
     for (let i = 0; i < prs.length; i++) {
       let pr = prs[i].node;
-      let userId = pr.author.login;
-
-      // Initialize user in leaderboard if not already present
-      if (!leaderboard[userId]) {
-        leaderboard[userId] = {
-          avatar_url: pr.author.avatarUrl,
-          login: pr.author.login,
-          url: pr.author.url,
-          score: 0,
-          postManTag: false,
-          web3hack: false,
-          pr_urls: [],
-          pr_dates: [], // Store PR dates here
-          streak: 0,
-        };
-      }
-
-      // Track PR labels for scoring
-      let prLabels = pr.labels.edges.map((labelEdge) => labelEdge.node.name);
-      prLabels.forEach((label) => {
-        let labelObj = labels.find((o) => o.label.toLowerCase() === label.toLowerCase());
-        if (labelObj) {
-          leaderboard[userId].score += labelObj.points;
+      let userId = pr.author?.login;
+      if (userId) {
+        // Initialize user in leaderboard if not already present
+        if (!leaderboard[userId]) {
+          leaderboard[userId] = {
+            avatar_url: pr.author.avatarUrl,
+            login: pr.author?.login,
+            url: pr.author.url,
+            score: 0,
+            postManTag: false,
+            web3hack: false,
+            pr_urls: [],
+            pr_dates: [], // Store PR dates here
+            streak: 0,
+          };
         }
-      });
 
-      // Track PR URLs to avoid duplicates
-      if (!leaderboard[userId].pr_urls.includes(pr.url)) {
-        leaderboard[userId].pr_urls.push(pr.url);
-      }
+        // Track PR labels for scoring
+        let prLabels = pr.labels.edges.map((labelEdge) => labelEdge.node.name);
+        prLabels.forEach((label) => {
+          let labelObj = labels.find(
+            (o) => o.label.toLowerCase() === label.toLowerCase()
+          );
+          if (labelObj) {
+            leaderboard[userId].score += labelObj.points;
+          }
+        });
 
-      // Extra score for postman label
-      if (!leaderboard[userId].postManTag && prLabels.includes("postman")) {
-        
-        //console.log("Postman tag found for " + leaderboard[userId].score,leaderboard[userId].login,leaderboard[userId].postManTag);
-        leaderboard[userId].postManTag = true;
-        leaderboard[userId].score += 500;
-      }
+        // Track PR URLs to avoid duplicates
+        if (!leaderboard[userId].pr_urls.includes(pr.url)) {
+          leaderboard[userId].pr_urls.push(pr.url);
+        }
 
-      if (!leaderboard[userId].web3hack && prLabels.includes("hack-web3")) {
-        leaderboard[userId].web3hack = true;
-        leaderboard[userId].score += 250;
-      }
+        // Extra score for postman label
+        if (!leaderboard[userId].postManTag && prLabels.includes("postman")) {
+          //console.log("Postman tag found for " + leaderboard[userId].score,leaderboard[userId].login,leaderboard[userId].postManTag);
+          leaderboard[userId].postManTag = true;
+          leaderboard[userId].score += 500;
+        }
 
-      // Collect PR submission dates
-      let createdAt = new Date(pr.createdAt).toISOString().split("T")[0]; // Store only the date part
-      if (!leaderboard[userId].pr_dates.includes(createdAt)) {
-        leaderboard[userId].pr_dates.push(createdAt);
+        if (!leaderboard[userId].web3hack && prLabels.includes("hack-web3")) {
+          leaderboard[userId].web3hack = true;
+          leaderboard[userId].score += 250;
+        }
+
+        // Collect PR submission dates
+        let createdAt = new Date(pr.createdAt).toISOString().split("T")[0]; // Store only the date part
+        if (!leaderboard[userId].pr_dates.includes(createdAt)) {
+          leaderboard[userId].pr_dates.push(createdAt);
+        }
       }
     }
 
@@ -153,7 +157,13 @@ async function generateLeaderboard() {
     let cursor = null;
 
     while (hasNextPage) {
-      let query = getGraphQLQuery(repoOwner, repoName, "2024-10-01", "2024-11-10T18:59:59Z", cursor);
+      let query = getGraphQLQuery(
+        repoOwner,
+        repoName,
+        "2024-10-01",
+        "2024-11-10T18:59:59Z",
+        cursor
+      );
 
       await axios
         .post(
@@ -166,11 +176,10 @@ async function generateLeaderboard() {
           }
         )
         .then(async function (response) {
-
           await leaderboardData(response, leaderboard, labels);
 
           hasNextPage = response.data.data.search.pageInfo.hasNextPage;
-          cursor = response.data.data.search.pageInfo.endCursor; 
+          cursor = response.data.data.search.pageInfo.endCursor;
         })
         .catch(async function (err) {
           if (
@@ -183,11 +192,19 @@ async function generateLeaderboard() {
             );
             const waitTime = resetTime - new Date();
             if (waitTime > 0) {
-              console.log(`Rate limit exceeded. Waiting for ${waitTime / 1000 / 60} minutes.`);
+              console.log(
+                `Rate limit exceeded. Waiting for ${
+                  waitTime / 1000 / 60
+                } minutes.`
+              );
               await timer(waitTime);
             }
           }
-          console.log("Not found for this project link ", `${repoOwner}/${repoName}`);
+          console.log(err);
+          console.log(
+            "Not found for this project link ",
+            `${repoOwner}/${repoName}`
+          );
           hasNextPage = false;
         });
     }
@@ -196,7 +213,9 @@ async function generateLeaderboard() {
     await timer(10000);
   }
 
-  let leaderboardArray = Object.keys(leaderboard).map((key) => leaderboard[key]);
+  let leaderboardArray = Object.keys(leaderboard).map(
+    (key) => leaderboard[key]
+  );
   leaderboardArray.sort((a, b) => b.score - a.score);
 
   let json = {
@@ -204,18 +223,28 @@ async function generateLeaderboard() {
     success: true,
     updatedAt: +new Date(),
     generated: true,
-    updatedTimestring: new Date().toLocaleString() + " No New PRs merged after 10th November 7:00p.m are counted",
-    streakData: leaderboardArray.map(user => ({ login: user.login, streak: user.streak })),
+    updatedTimestring:
+      new Date().toLocaleString() +
+      " No New PRs merged after 10th November 7:00p.m are counted",
+    streakData: leaderboardArray.map((user) => ({
+      login: user?.login,
+      streak: user.streak,
+    })),
   };
-  
+
   fs.truncate("leaderboard.json", 0, function () {
     console.log("done");
   });
-  
-  fs.writeFile("leaderboard.json", JSON.stringify(json), "utf8", function (err) {
-    if (err) throw err;
-    console.log("leaderboard.json was updated");
-  });
+
+  fs.writeFile(
+    "leaderboard.json",
+    JSON.stringify(json),
+    "utf8",
+    function (err) {
+      if (err) throw err;
+      console.log("leaderboard.json was updated");
+    }
+  );
 }
 
 module.exports.generateLeaderboard = generateLeaderboard;
