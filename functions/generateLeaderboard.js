@@ -85,7 +85,6 @@ const leaderboardData = async (response, leaderboard, labels) => {
       }
 
       if (!leaderboard[userId].web3hack && prLabels.includes("hack-web3")) {
-        
         leaderboard[userId].web3hack = true;
         leaderboard[userId].score += 250;
       }
