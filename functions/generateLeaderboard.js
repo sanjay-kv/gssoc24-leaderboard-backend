@@ -7,7 +7,9 @@ let leaderboard = {};
 const getGraphQLQuery = (repoOwner, repoName, start, end, cursor = null) => {
   return `
     query {
-      search(query: "repo:${repoOwner}/${repoName} is:pr is:merged label:gssoc-ext merged:${start}..${end}", type: ISSUE, first: 100, after: ${cursor ? `"${cursor}"` : "null"}) {
+      search(query: "repo:${repoOwner}/${repoName} is:pr is:merged label:gssoc-ext merged:${start}..${end}", type: ISSUE, first: 100, after: ${
+    cursor ? `"${cursor}"` : "null"
+  }) {
         issueCount
         pageInfo {
           endCursor
@@ -89,7 +91,7 @@ const leaderboardData = async (response, leaderboard, labels) => {
 
         if (!leaderboard[userId].web3hack && prLabels.includes("hack-web3")) {
           leaderboard[userId].web3hack = true;
-          leaderboard[userId].score += 250;
+          leaderboard[userId].score += 500;
         }
 
         // Collect PR submission dates
@@ -129,13 +131,7 @@ const leaderboardData = async (response, leaderboard, labels) => {
   }
 };
 
-async function generateLeaderboard() {
-  let projects = await axios.get(
-    "https://opensheet.elk.sh/1dM4gAty0kvjxXjT_UPQZQ6sy8ixcwut8asDM2IDVEss/1"
-  );
-  leaderboard = {};
-  projects = projects.data;
-
+const analyeseData = async (from, to, repoOwner, repoName, leaderboard) => {
   let labels = [
     { label: "level1", points: 10 },
     { label: "level2", points: 25 },
@@ -148,65 +144,91 @@ async function generateLeaderboard() {
     { label: "level-3", points: 45 },
   ];
 
+  let hasNextPage = true;
+  let cursor = null;
+
+  while (hasNextPage) {
+    let query = getGraphQLQuery(repoOwner, repoName, from, to, cursor);
+
+    await axios
+      .post(
+        "https://api.github.com/graphql",
+        { query },
+        {
+          headers: {
+            Authorization: "Bearer " + process.env.GIT_TOKEN,
+          },
+        }
+      )
+      .then(async function (response) {
+        await leaderboardData(response, leaderboard, labels);
+
+        hasNextPage = response.data.data.search.pageInfo.hasNextPage;
+        cursor = response.data.data.search.pageInfo.endCursor;
+      })
+      .catch(async function (err) {
+        if (
+          err.response &&
+          err.response.status === 403 &&
+          err.response.headers["x-ratelimit-reset"]
+        ) {
+          const resetTime = new Date(
+            err.response.headers["x-ratelimit-reset"] * 1000
+          );
+          const waitTime = resetTime - new Date();
+          if (waitTime > 0) {
+            console.log(
+              `Rate limit exceeded. Waiting for ${
+                waitTime / 1000 / 60
+              } minutes.`
+            );
+            await timer(waitTime);
+          }
+        }
+        console.log(
+          "Not found for this project link ",
+          `${repoOwner}/${repoName}`
+        );
+        hasNextPage = false;
+      });
+  }
+};
+
+async function generateLeaderboard() {
+  let projects = await axios.get(
+    "https://opensheet.elk.sh/1dM4gAty0kvjxXjT_UPQZQ6sy8ixcwut8asDM2IDVEss/1"
+  );
+  leaderboard = {};
+  projects = projects.data;
+
   for (let m = 0; m < projects.length; m++) {
     let projectLink = projects[m].project_link;
     let [repoOwner, repoName] = projectLink.split("/").slice(-2);
     console.log(`${repoOwner}/${repoName}`);
-
-    let hasNextPage = true;
-    let cursor = null;
-
-    while (hasNextPage) {
-      let query = getGraphQLQuery(
+    if ("GSSoC24/Postman-Challenge" == `${repoOwner}/${repoName}`) {
+      await analyeseData(
+        "2024-10-01",
+        "2024-11-01",
         repoOwner,
         repoName,
-        "2024-10-01",
-        "2024-11-10T18:59:59Z",
-        cursor
+        leaderboard
       );
 
-      await axios
-        .post(
-          "https://api.github.com/graphql",
-          { query },
-          {
-            headers: {
-              Authorization: "Bearer " + process.env.GIT_TOKEN,
-            },
-          }
-        )
-        .then(async function (response) {
-          await leaderboardData(response, leaderboard, labels);
-
-          hasNextPage = response.data.data.search.pageInfo.hasNextPage;
-          cursor = response.data.data.search.pageInfo.endCursor;
-        })
-        .catch(async function (err) {
-          if (
-            err.response &&
-            err.response.status === 403 &&
-            err.response.headers["x-ratelimit-reset"]
-          ) {
-            const resetTime = new Date(
-              err.response.headers["x-ratelimit-reset"] * 1000
-            );
-            const waitTime = resetTime - new Date();
-            if (waitTime > 0) {
-              console.log(
-                `Rate limit exceeded. Waiting for ${
-                  waitTime / 1000 / 60
-                } minutes.`
-              );
-              await timer(waitTime);
-            }
-          }
-          console.log(err);
-          console.log(
-            "Not found for this project link ",
-            `${repoOwner}/${repoName}`
-          );
-          hasNextPage = false;
-        });
+      await analyeseData(
+        "2024-11-02",
+        "2024-11-10T18:59:59Z",
+        repoOwner,
+        repoName,
+        leaderboard
+      );
+    } else {
+      await analyeseData(
+        "2024-10-01",
+        "2024-11-10T18:59:59Z",
+        repoOwner,
+        repoName,
+        leaderboard
+      );
     }
 
     console.log("Completed " + (m + 1) + " of " + projects.length);
