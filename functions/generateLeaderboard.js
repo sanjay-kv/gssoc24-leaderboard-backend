@@ -232,7 +232,7 @@ async function generateLeaderboard() {
     }
 
     console.log("Completed " + (m + 1) + " of " + projects.length);
-    await timer(10000);
+    await timer(2000);
   }
 
   let leaderboardArray = Object.keys(leaderboard).map(
